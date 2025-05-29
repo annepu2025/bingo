@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <title>Bingo-arvonta</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+    #current-number {
+      font-size: 100px;
+      margin: 20px 0;
+      color: #0077cc;
+    }
+    button {
+      font-size: 20px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(10, 50px);
+      gap: 5px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+    .cell {
+      width: 50px;
+      height: 50px;
+      line-height: 50px;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .marked {
+      background: lightgreen;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎱 Bingo-arvonta</h1>
+  <div id="current-number">–</div>
+  <button onclick="arvoNumero()">Arvo numero</button>
+
+  <audio id="bingoSound" src="pallo.wav"></audio>
+
+  <div class="grid" id="numeroGrid"></div>
+
+  <script>
+    const kaikkiNumerot = Array.from({length: 36}, (_, i) => i + 1);
+    let numerot = [...kaikkiNumerot];
+    let arvotut = [];
+
+    const currentNumber = document.getElementById("current-number");
+    const numeroGrid = document.getElementById("numeroGrid");
+
+    // Luo ruudukko
+    kaikkiNumerot.forEach(nro => {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.id = "cell-" + nro;
+      cell.textContent = nro;
+      numeroGrid.appendChild(cell);
+    });
+
+    function arvoNumero() {
+      if (numerot.length === 0) {
+        currentNumber.textContent = "✅";
+        alert("Kaikki numerot on arvottu!");
+        return;
+      }
+
+      const index = Math.floor(Math.random() * numerot.length);
+      const numero = numerot.splice(index, 1)[0];
+      arvotut.push(numero);
+
+      currentNumber.textContent = "…";
+
+      const bingoSound = document.getElementById("bingoSound");
+      bingoSound.currentTime = 0;
+      bingoSound.play();
+
+      bingoSound.onended = () => {
+        const puhuja = new SpeechSynthesisUtterance(numero.toString());
+        puhuja.lang = 'fi-FI';
+
+        puhuja.onend = () => {
+          currentNumber.textContent = numero;
+
+          const cell = document.getElementById("cell-" + numero);
+          if (cell) {
+            cell.classList.add("marked");
+          }
+        };
+
+        speechSynthesis.speak(puhuja);
+      };
+    }
+  </script>
+</body>
+</html>
